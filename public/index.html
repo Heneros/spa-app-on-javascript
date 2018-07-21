@@ -1,10 +1,9 @@
 <html>
 	<head>
-
+		<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" />
 	</head>
 	<body>
-			<section id="reddit">
-			</section>
+
 					<script>
 
 		function getUtil(url, callback) {
@@ -23,10 +22,14 @@
 		}
     function showBlogData(data){
     	let article = document.createElement('article');
-    	let contentDetails = data[0].data.children[0].data;
-
-    	article.innerHTML = `<p>Title: ${contentDetails.title} <br>
-                           Votes: ${contentDetails.ups}</p>`;
+    	let contentDetails = data[0].data.children[0].data
+    	console.log(contentDetails.title);
+    	console.log(contentDetails.ups);
+      article.innerHTML = `
+      <p> Title: ${contentDetails.title} <br>
+      Votes: ${contentDetails.ups}</p>`
+      document.getElementById("blogdata").append(article)
+       document.getElementsByClassName("spinner")[0].style.display ="none";
     }
 		function init() {
 			getUtil("https://www.reddit.com/r/javascript.json",(redditData) => {
@@ -35,16 +38,16 @@
 				 	let anchor = document.createElement('a');
 				 	after = JSON.parse(redditData).data.after
 				 	let url = "https://www.reddit.com" + info.data.permalink + ".json"
+				 	anchor.href = url;
 				 	anchor.innerHTML = info.data.title;
 				  
 				  anchor.onclick = (e) =>{
-				  	e.preventDefault();
+				    e.preventDefault();
 				  	console.log(url);
-
-				  	getUtil(url,(blogData)=>{
-
-				  		console.log(blogData);
-				  		showBlogData(JSON.parse.blogData)
+				  	document.getElementById("reddit").style.display = "none"
+            document.getElementsByClassName("spinner")[0].style.display ="block";
+				  	getUtil(url, (blogData)=>{
+				  		showBlogData(JSON.parse(blogData))
 				  	})
 				  }
           article.appendChild(anchor);
@@ -56,7 +59,56 @@
 		}
 				
 		window.onload = init;
+		window.onscroll = function(ev) {
+		    if (((window.innerHeight + window.scrollY) + 5) >= document.body.offsetHeight) {
+		       getUtil("https://www.reddit.com/r/javascript.json?after=" + after,(redditData) => {
+					JSON.parse(redditData).data.children.forEach((info) => {
+					 	var article = document.createElement('article');
+					 	after = JSON.parse(redditData).data.after
+						article.innerHTML = "<p>" + info.data.title + "</p>";
+						article.className = "col-md-12 col-xs-12";
+						document.getElementById("reddit").append(article);
+					});
+			})
+		}
+		};
 
 		</script>
+		<style>
+			.spinner{
+				width: 40px;
+				height: 40px;
+				background-color: #ccc;
+				margin: 100px auto;
+				-webkit-animation: sk-rotateplane 1.2s infinite ease-in-out;
+				animation: sk-rotateplane 1.2s infinite ease-in-out;
+			}
+			@-webkit-keyframes sk-rotateplane{
+				0%{-webkit-tranform: perspective(120px)}
+				50%{-webkit-tranform: perspective(120px) rotateY(180deg)}
+				100%{-webkit-tranform: perspective(120px) rotateY(180deg) rotateX(180deg)}
+			}
+			@keyframes sk-rotateplane{
+				0%{
+         transform:  perspective(120px) rotateX(0deg) rotateY(0deg);
+         -webkit-tranform: perspective(120px) rotateX(0deg) rotateY(0deg);
+       }
+       	50%{
+         transform:  perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+         -webkit-tranform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+       }
+         100%{
+         transform:  perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+         -webkit-tranform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+       }
+				}
+			}
+
+		</style>
+		<div class="spinner" style="display: none"></div>
+			<section id="blogdata" style="padding: 35px" class="row">
+			</section>
+		  <section id="reddit" style="padding: 30px" class="row">
+			</section>
 	</body>
 </html>
